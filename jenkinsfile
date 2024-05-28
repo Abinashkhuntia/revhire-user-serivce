@@ -1,0 +1,52 @@
+pipeline { 
+    environment {
+        revhire-job-service= '471112742532.dkr.ecr.us-east-1.amazonaws.com/revhire-user-service-repo:latest'
+    }
+    agent any 
+    stages {
+        stage('checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/Abinashkhuntia/revhire-project-2.git'
+            }
+        }
+        stage('checking pre-requisites') {
+            steps {
+                script {
+                    sh "git --version"
+                    sh "kubectl version"
+                    sh "docker --version"
+                    sh "terraform --version"
+                    sh "npm --version"
+                    sh "nodejs --version"
+                    ng "ng --version"
+                }
+            }
+        }
+        
+        stage('Building the User Service image') {
+            steps {
+                dependencies {
+                    build('Building the Infrastructure')
+                }
+                script {
+                    echo "Building the User Service"
+                    sh "cd ../revhire-user-service"
+                    sh "docker build -t ${revhire-job-service} ."
+                    sh "docker push ${revhire-job-service}"
+                }
+            }
+        }
+
+        stage('Deploying the User Service and Job Service') {
+            steps {
+                script {
+                    echo "Deploying the User Service"
+                    sh "kubectl apply -f ../revhire-user-service/manifests/deployment.yaml"
+                }
+            }
+        }
+
+       
+    } 
+}
