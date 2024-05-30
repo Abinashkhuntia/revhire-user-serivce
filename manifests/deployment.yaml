@@ -16,7 +16,28 @@ spec:
       containers:
         - name: revhire-user
           image: 471112742532.dkr.ecr.us-east-1.amazonaws.com/revhire-user-service-repo:latest
-          
+          env:
+          - name: DB_URL
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: DB_URL
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: DB_USERNAME
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: DB_PASSWORD
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: DB_PORT
+              
 ---
 apiVersion: v1
 kind: Service
@@ -31,4 +52,28 @@ spec:
     - protocol: 'TCP'
       port: 8082
       targetPort: 8082
-  type: LoadBalancer
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: revhire-user-service
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: revhire-user-service
+            port:
+              number: 8082
+
+
