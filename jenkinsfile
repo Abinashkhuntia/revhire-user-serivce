@@ -34,6 +34,7 @@ pipeline {
                         kubectl apply -f manifests/deployment.yaml
                         kubectl create -f manifests/docker-project/manifests/
                         kubectl create -f manifests/docker-project/manifests/setup
+                        kubectl create -f manifests/docker-project/prometheus.yaml
                         '''
                     }
                 }
