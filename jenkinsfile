@@ -32,8 +32,6 @@ pipeline {
                         sh'''
                         aws eks --region us-east-1 update-kubeconfig --name my-cluster
                         kubectl apply -f manifests/deployment.yaml
-                        kubectl apply -f manifests/docker-project/manifests/
-                        kubectl apply -f manifests/docker-project/manifests/setup
                         kubectl apply -f manifests/docker-project/prometheus.yaml
                         '''
                     }
