@@ -20,20 +20,20 @@ pipeline {
                         sh "docker build -t ${revhire_user_service} ."
                         sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 471112742532.dkr.ecr.us-east-1.amazonaws.com"
                         sh "docker push ${revhire_user_service}"
-                        sh "docker rmi $(docker images -a -q)"
-
                     }
                 }
             }
         }
 
-        stage('Deploying the Prometheus') {
+        stage('Deploying the user service and Prometheus') {
             steps {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credential', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                         sh'''
-
-                        kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+                        aws eks --region us-east-1 update-kubeconfig --name my-cluster
+                        kubectl apply -f manifests/deployment.yaml
+                        kubectl create -f manifests/docker-project/manifests/
+                        kubectl create -f manifests/docker-project/manifests/setup
                         '''
                     }
                 }
